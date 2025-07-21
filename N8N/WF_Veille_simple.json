@@ -1,0 +1,153 @@
+{
+  "name": Veille simple",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "d3f97dd7-7691-41fe-b9c9-b92e7cc8c89c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "fromEmail": "<SOURCE>",
+        "toEmail": "<DESTINATION>",
+        "subject": "Veille cyber N8N ",
+        "emailFormat": "text",
+        "text": "={{ $json.resultsArray.map(item => JSON.stringify(item, null, 2)).join('\\n\\n') }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        680,
+        0
+      ],
+      "id": "ac83e77f-129d-4fb9-9f39-4ceb08227252",
+      "name": "Send email",
+      "webhookId": "cced2c61-b9d6-4a03-aa33-c5ea5420e7fd",
+      "credentials": {
+        "smtp": {
+          "id": "<API>",
+          "name": "smtp.mailersend.net"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "news",
+        "query": "cybersecurity news"
+      },
+      "type": "@brave/n8n-nodes-brave-search.braveSearch",
+      "typeVersion": 1,
+      "position": [
+        140,
+        0
+      ],
+      "id": "28702a34-975f-4806-bbbc-28a042efa81c",
+      "name": "Brave Search",
+      "credentials": {
+        "braveSearchApi": {
+          "id": "<API>",
+          "name": "Brave Search account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let text = \"\";\nlet resultsArray = [];\nfor (const item of $input.all()) {\n    const results = item.json.results;\n    for (const result of results) {\n        const desc = result.description || \"No title\";\n        const date = result.page_age || \"No date\";\n        const site = result.url || \"No site\";\n        text += `Description: ${desc} --- Date: ${date} --- Site: ${site} \\n\\n\\n`;\n      resultsArray.push({\n            description: desc,\n            date: date,\n            site: site\n        });\n    }\n}\nreturn { resultsArray };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        340,
+        0
+      ],
+      "id": "c1462f36-ecd1-4839-a8e0-c09cbadf46ea",
+      "name": "Code3",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ],
+      "id": "f93cf800-d8a1-493f-8be4-87dafda85f4c",
+      "name": "Code4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Brave Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brave Search": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ca6fbc8d-00d3-40a3-af78-d1b55dcec388",
+  "meta": {
+    "instanceId": "aa1e36e8dfbe4062fd91b93bd6603301455b082d861be7365cba72e07dcd1f4d"
+  },
+  "id": "M4D4YmXx8dGTM73T",
+  "tags": []
+}
